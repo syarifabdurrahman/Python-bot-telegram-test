@@ -1,6 +1,7 @@
 import bs4
 import requests
 
+
 class Calamity:
 
     def __init__(self,description):
@@ -12,15 +13,16 @@ class Calamity:
     def tampilkan_data(self):
         pass
 
-    def get_img(self):
+    def show_on_bot(self):
         pass
 
-    def show_on_bot(self):
+    def get_image(self):
         pass
         
     def run(self):
         self.ekstraksi_data()
-        self.tampilkan_data()
+        # self.tampilkan_data()
+        self.get_image()
 
 
 class GempaTerkini(Calamity):
@@ -121,8 +123,9 @@ class GempaTerkini(Calamity):
             f"dirasakan:  {self.result['dirasakan']} \n"
         )
 
-    def get_img(self) -> str:
+    def get_image(self) -> str:
         src_img= str(self.result['src'])
+        # print(src_img)
         return src_img
 
 if __name__=="__main__":

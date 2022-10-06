@@ -1,3 +1,4 @@
+import traceback
 from telegram import *
 from telegram.ext import *
 from requests import *
@@ -26,27 +27,25 @@ def handle_message(update:Update,context:CallbackContext):
     update.message.reply_text(response)
     if text == "bmkg" or text == "gempa terkini":
         buttons=[
-            [InlineKeyboardButton("🌎",callback_data="show_image")],
+            [InlineKeyboardButton("🗺️",callback_data="show_image")],
         ]
         context.bot.send_message(chat_id=update.effective_chat.id,reply_markup=InlineKeyboardMarkup(buttons), text="Tampilkan gambar?")
 
-imgUrl=None
-
-def getURl(urlImg):
-    imgUrl=urlImg
 
 def queryHandler(update:Update,context:CallbackContext):
-    query = update.callback_query.data
-    update.callback_query.answer()
+    try:
+        query = update.callback_query.data
+        update.callback_query.answer()
+        
+        gempa_di_indonesia = GempaTerkini()
+        gempa_di_indonesia.run()
+        a = gempa_di_indonesia.get_image()
 
-    print(imgUrl)
+        if "show_image" in query:
+            context.bot.send_photo(chat_id=update.effective_chat.id,photo=f"{a}")
 
-    gempa_di_indonesia = GempaTerkini()
-    urlImg= gempa_di_indonesia.get_img()
-
-    if "show_image" in query:
-        context.bot.send_photo(chat_id=update.effective_chat.id,photo=f"{urlImg}")
-
+    except:
+        traceback.print_exc()
 
 
 def error(update:Update,context:CallbackContext):

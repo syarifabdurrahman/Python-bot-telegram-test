@@ -1,6 +1,6 @@
 from datetime import datetime
-import main as m
 from Gempa_terkini import GempaTerkini
+
 
 def sample_responses(input_text):
     user_message = str(input_text).lower()
@@ -19,10 +19,11 @@ def sample_responses(input_text):
 
     if user_message in ("bmkg", "gempa terkini"):
        gempa_di_indonesia = GempaTerkini()
-       gempa_di_indonesia.ekstraksi_data()
-       m.getURl(gempa_di_indonesia.get_img())
+       gempa_di_indonesia.run()
 
-       
+    #  gempa_di_indonesia.ekstraksi_data()
+    #  gempa_di_indonesia.get_img()
+
 
        return (gempa_di_indonesia.show_on_bot())
 
