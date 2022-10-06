@@ -1,68 +1,74 @@
-from email import message
+from telegram import *
 from telegram.ext import *
+from requests import *
+from Gempa_terkini import GempaTerkini
+import response as r
 import keys
 
-print('starting up bot')
+def start_command(update:Update,context:CallbackContext):
+    update.message.reply_text('Welcome to the bot!\n ')
 
-def start_command(update,context):
-    update.message.reply_text('Hello there! I\'m a bot. This is for test, nice to meet you')
-
-def help_command(update,context):
-    update.message.reply_text('Try typing anything and i will respond!')
-
-def custom_command(update,context):
-    update.message.reply_text('This is a custom command!')
-
-
+def help_command(update:Update,context:CallbackContext):
+    helpStr=[
+     "1. /start to start",
+     "2. /help to view helpers",
+     "3. type 'bmkg' atau 'gempa terkini' untuk menampilkan gempa terkini ",
+     ]
+    text="\n"
 
 
-def handle_response(text: str) -> str:  # parameter type of string and return a string
-    if 'hello' in text:
-        return 'Hey there!'
+    update.message.reply_text(text.join(helpStr))
 
-    if 'how are you' in text:
-        return 'Im doing good'
-
-
-    return 'I don\'t understand'
-
-def handle_message(update,context):
-    message_type = update.message.chat.type
-    text = str(update.message.chat).lower()
-    response = ''
-
-    print(f'User ({update.message.chat.id}) says: "{text}" in: {message_type}')
-
-    if message_type == 'group':
-        if '@MrTestSyarifBot' in text:
-            new_text=text.replace('@MrTestSyarifBot','').strip()
-            response = handle_response(new_text)
-
-    else:
-        response = handle_response(text)
+def handle_message(update:Update,context:CallbackContext):
+    text = str(update.message.text).lower()
+    response= r.sample_responses(text)
 
     update.message.reply_text(response)
+    if text == "bmkg" or text == "gempa terkini":
+        buttons=[
+            [InlineKeyboardButton("🌎",callback_data="show_image")],
+        ]
+        context.bot.send_message(chat_id=update.effective_chat.id,reply_markup=InlineKeyboardMarkup(buttons), text="Tampilkan gambar?")
+
+imgUrl=None
+
+def getURl(urlImg):
+    imgUrl=urlImg
+
+def queryHandler(update:Update,context:CallbackContext):
+    query = update.callback_query.data
+    update.callback_query.answer()
+
+    print(imgUrl)
+
+    gempa_di_indonesia = GempaTerkini()
+    urlImg= gempa_di_indonesia.get_img()
+
+    if "show_image" in query:
+        context.bot.send_photo(chat_id=update.effective_chat.id,photo=f"{urlImg}")
 
 
-def error(update,context):
-    print(f'User ({update}) caused error: {context.error}"')
 
+def error(update:Update,context:CallbackContext):
+    print(context.error)
 
-if __name__ == '__main__':
-    updater=Updater(keys.token,use_context=True)
-    dispatch=updater.dispatcher
+def main():
+    updater= Updater(keys.token, use_context=True)
+    dp= updater.dispatcher
 
-    #commands
-    dispatch.add_handler(CommandHandler('start',start_command))
-    dispatch.add_handler(CommandHandler('help',help_command))
-    dispatch.add_handler(CommandHandler('custom',custom_command))
+    dp.add_handler(CommandHandler("start",start_command))
+    dp.add_handler(CommandHandler("help",help_command))
+    dp.add_handler(CallbackQueryHandler(queryHandler))
 
-    #Messages
-    dispatch.add_handler(MessageHandler(Filters.text,handle_message))
+    dp.add_handler(MessageHandler(Filters.text, handle_message))
 
-    #Errors
-    dispatch.add_error_handler(error)
+    dp.add_error_handler(error)
 
-    #Run bot with schedule or how often this running
-    updater.start_polling(1.0)
+    updater.start_polling(3.0)
     updater.idle()
+
+
+
+if __name__ == "__main__":
+    print('starting up bot')
+    main()
